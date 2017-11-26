@@ -53,7 +53,98 @@ function P = ComputeTransitionProbabilities( stateSpace, controlSpace, mazeSize,
 %           probability from state i to state j if control input l is
 %           applied.
 
-% put your code here
+L= size(controlSpace,1)
+MN=size(stateSpace,1)
 
+P=zeros(MN,MN,L);
+r= sub2ind(flip(mazeSize),resetCell(2),resetCell(2));
+
+for l = 1:L
+    for i = 1 :  MN
+        for j = 1 : MN
+            if (stateSpace(j,:)-stateSpace(i,:))==controlSpace(l,:)
+                distance=max(max(abs(controlSpace(l,:))));
+                if ~distance
+                    P(i,j,l)= 1;
+                else
+                    step_ball=controlSpace(l,:)./distance;
+                    Prev_State=i;
+                    Prev_Pos=stateSpace(i,:)
+                    for p=1:distance
+                        Next_Pos=Prev_Pos+step_ball;                       
+                        if sum(abs(step_ball))==1
+                            if (sum(step_ball)==-1)
+                                wall_coincidence=ismember(walls,[Prev_Pos+step_ball; Prev_Pos+step_ball+[0 -1]])
+                            else
+                                wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(step_ball)],'rows')
+                            end
+                            Prev_Pos
+                            wall_belonging=find(wall_coincidence,size(wall_coincidence,1))
+                            wall_contiguous=diff(wall_belonging)==1
+                            if sum(wall_contiguous)
+                            %if (size(wall_contiguous,1)>1) && sum(wall_contiguous(1:size(wall_contiguous,2)))>1
+                                    Next_Pos=Prev_Pos
+                                    step_ball  
+                            end
+%                         elseif sum(abs(step_ball))>1
+%                             if 
+%                                 wall_coincidence=ismember(walls,[Prev_Pos+step_ball; Prev_Pos+step_ball+[0 -1]])
+%                             else
+%                                 wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(step_ball)],'rows')
+%                             end
+%                             Prev_Pos
+%                             wall_belonging=find(wall_coincidence,size(wall_coincidence,1))
+%                             wall_contiguous=diff(wall_belonging)==1
+%                             if sum(wall_contiguous)
+%                                     Next_Pos=Prev_Pos
+%                                     step_ball  
+%                             end
+                        end
+%                         if sum(abs(step))>=1
+%                             if (sum(step)<-1 && ismember(walls,[Prev_Pos+step; Prev_Pos+step+[0 -1]],'rows'))
+%                                     Next_Pos=Prev_Pos;
+%                             end
+%                         end
+     
+                        X= sub2ind(flip(mazeSize),Next_Pos(2),Next_Pos(1));
+
+                        %Hole detection
+                        if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
+                            P(Prev_State,X,l)= (1-p_f)^p; 
+                            P(Prev_State,r,l)= p_f^p;
+                        else
+                            P(Prev_State,X,l)= 1;
+                        end
+                        Prev_State=X;
+                        Prev_Pos=Next_Pos;
+                    end
+                end
+            end
+        end
+    end
 end
 
+%Disturbance
+
+disturbance=[0 0; 1 0; 1 1; 0 1; -1 1; -1 0; -1 -1; 0 -1; 1 -1];
+
+
+% for l = 1:L
+%     for i = 1 :  MN
+%         for j = 1 : MN
+%             if (stateSpace(j,:)-stateSpace(i,:))==controlSpace(l,:)
+%                 distance=max(max(abs(controlSpace(l,:))))
+%                 for p=1:distance
+%                     Pos=stateSpace(i,:)+controlSpace(l,:)*p/distance
+%                     r=i+controlSpace(l,1)*M+controlSpace(l,2)
+%                     if ismember(holes,stateSpace(r,:)+controlSpace(l,:)*p/distance,'rows')
+%                         P(r,j,l)= (1-p_f)^p;
+%                         P(
+%                     else
+%                         P(i,j,l)= 1;
+%                     end
+%                 end
+%             end
+%         end
+%     end
+% end
