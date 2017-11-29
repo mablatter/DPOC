@@ -69,6 +69,14 @@ Prob_disturb=[1/9 1/9 1/9 1/9 1/9 1/9 1/9 1/9 1/9];
 
 for i = 1 : MN
 	for l = 1 : L
+        if ismember(stateSpace(i, :),targetCell,'rows')
+            if max(max(abs(controlSpace(l,:)))) == 0
+                G(i,l) = 0;
+                continue;
+            else
+                G(i,l) = inf;
+            end
+        end
         not_valid = 0;
         new_loc=stateSpace(i,:)+controlSpace(l,:);
         if (new_loc(1) > mazeSize(1) || new_loc(1) < 1 || new_loc(2) > mazeSize(2) || new_loc(2) < 1)
@@ -131,10 +139,12 @@ for i = 1 : MN
                     end
                 end
                 Prev_Pos = Prev_Pos + step_ball;
-                hole_at_pos = ismember(Prev_Pos, holes, 'rows');
-                if sum(hole_at_pos) > 0
-                    G(i,l) = G(i,l) + end_probability*p_f*c_r;
-                    end_probability = end_probability*(1 - p_f);
+                if ~isempty(holes)
+                    hole_at_pos = ismember(Prev_Pos, holes, 'rows');
+                    if sum(hole_at_pos) > 0 && distance > 0
+                        G(i,l) = G(i,l) + end_probability*p_f*c_r;
+                        end_probability = end_probability*(1 - p_f);
+                    end
                 end
             end
             if not_valid
@@ -143,14 +153,13 @@ for i = 1 : MN
             end
         end
         for a = 1: size(disturbance(:,1))
+            bounced_off = 0;
             next_pos = stateSpace(i,:)+controlSpace(l,:)+ disturbance(a,:);
+            Prev_Pos = stateSpace(i,:)+controlSpace(l,:);
             if (next_pos(1) > mazeSize(1) || next_pos(1) < 1 || next_pos(2) > mazeSize(2) || next_pos(2) < 1)
                 G(i,l) = G(i,l) + end_probability*Prob_disturb(a)*c_p;
-                continue;        
-            end
-            Prev_Pos = stateSpace(i,:)+controlSpace(l,:);
-            if sum(abs(disturbance(a, :)))==1
-
+                bounced_off = 1;        
+            elseif sum(abs(disturbance(a, :)))==1
                 if (sum(disturbance(a, :))==-1)
                     wall_coincidence=ismember(walls,[Prev_Pos+disturbance(a, :); Prev_Pos+disturbance(a, :)+flip(disturbance(a, :))],'rows');
                 else
@@ -159,17 +168,15 @@ for i = 1 : MN
                 wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
                 wall_contiguous = 0;
                 if size(wall_belonging,1) > 1
-
                     for x = 2:size(wall_belonging,1)
                         if(mod(wall_belonging(x), 2) == 0) && (wall_belonging(x)-wall_belonging(x-1) == 1)
                             wall_contiguous = wall_contiguous+1;
                         end
                     end
-                end
-                                                       
+                end          
                 if (wall_contiguous > 0) 
                     G(i,l) = G(i,l) + end_probability*Prob_disturb(a)*c_p;
-                    continue
+                    bounced_off = 1;
                 end
             elseif sum(abs(disturbance(a, :)))>1
                 if (disturbance(a, 1) == 1)
@@ -185,15 +192,20 @@ for i = 1 : MN
                         wall_coincidence=ismember([Prev_Pos + disturbance(a, :); Prev_Pos+[-1 -2]; Prev_Pos + [-2 -1]; Prev_Pos + [-1 0]; Prev_Pos + [0 -1]],walls,'rows');
                     end
                 end
-               
                 if wall_coincidence(1)==1
                     G(i,l) = G(i,l) + end_probability*Prob_disturb(a)*c_p;
-                    continue;
+                    bounced_off=1;
                 end
             end
-            hole_at_pos = ismember(Prev_Pos + disturbance(a, :), holes, 'rows');
-            if sum(hole_at_pos) > 0
-                G(i,l) = G(i,l) + end_probability*p_f*c_r*Prob_disturb(a);
+            if ~isempty(holes)
+                hole_at_pos = ismember(Prev_Pos + disturbance(a, :), holes, 'rows');
+                if sum(hole_at_pos) > 0 && max(max(abs(disturbance(a,:)))) > 0 && bounced_off == 0
+                    G(i,l) = G(i,l) + end_probability*p_f*c_r*Prob_disturb(a);
+                end
+                hole_at_pos = ismember(Prev_Pos, holes, 'rows');
+                if bounced_off && sum(hole_at_pos) >0
+                    G(i,l) = G(i,l) + end_probability*p_f*c_r*Prob_disturb(a);
+                end
             end
       end
    end
