@@ -135,13 +135,13 @@ for i = 1 :  MN
         end
     end
         
-    adapted_controlSpace
+    adapted_controlSpace;
     
     for control = 1:size(adapted_controlSpace,1)
         if i==1
             a=1;
         end
-        Control_input=find(controlSpace(:, 1) == adapted_controlSpace(control,1) & controlSpace(:, 2) == adapted_controlSpace(control,2))
+        Control_input=find(controlSpace(:, 1) == adapted_controlSpace(control,1) & controlSpace(:, 2) == adapted_controlSpace(control,2));
         Prev_Pos=stateSpace(i,:);
         i_State=i;
         distance=max(max(abs(adapted_controlSpace(control,:))));

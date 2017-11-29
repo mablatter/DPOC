@@ -32,5 +32,10 @@ function [ J_opt, u_opt_ind ] = PolicyIteration( P, G )
 
 % put your code here
 
+no_of_states = size(G,1);
+u_opt_ind = randi(no_of_states,1,no_of_states);
+
+J_opt = G
+
 end
 

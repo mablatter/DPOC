@@ -30,7 +30,39 @@ function [ J_opt, u_opt_ind ] = ValueIteration( P, G )
 %       	A (1 x MN) matrix containing the indices of the optimal control
 %       	inputs for each element of the state space.
 
-% put your code here
+% Variable initialization
+no_of_states = size(G,1);
+no_of_controls = size(G,2);
+u_opt_ind = zeros(no_of_states);
+expected_value = 0;
+count = 0;
+
+% Start with random values for costs
+J_opt = randi(1000,1,no_of_states);
+J_previous = J_opt-1;
+temporary_cost = zeros(no_of_controls);
+
+% Iterate
+while norm(J_opt-J_previous)>0.0001
+    count = count+1;
+    J_previous = J_opt;
+    for i=1:no_of_states
+        for u=1:no_of_controls % should be allowed control inputs
+            for j=1:no_of_states
+                expected_value = expected_value + P(i,j,u)*J_opt(j);
+            end
+            temporary_cost(u) = G(i,u)+expected_value;
+            expected_value = 0;
+        end
+        
+        % Determine minimum cost and its corresponding u (index)
+        [min_cost, min_cost_index] = min(temporary_cost);
+        J_opt(i) = min_cost(1);
+        u_opt_ind(i) = min_cost_index(1);
+    end
+end
+
+disp("Number of value iterations: " + count);
 
 end
 
