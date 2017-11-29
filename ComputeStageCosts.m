@@ -193,9 +193,8 @@ for i = 1 : MN
             end
             hole_at_pos = ismember(Prev_Pos + disturbance(a, :), holes, 'rows');
             if sum(hole_at_pos) > 0
-                G(i,l) = G(i,l) + end_probability*p_f*c_r;
+                G(i,l) = G(i,l) + end_probability*p_f*c_r*Prob_disturb(a);
             end
-
       end
    end
 end
