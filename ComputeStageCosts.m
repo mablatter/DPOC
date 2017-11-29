@@ -70,7 +70,7 @@ Prob_disturb=[1/9 1/9 1/9 1/9 1/9 1/9 1/9 1/9 1/9];
 for i = 1 : MN
 	for l = 1 : L
         not_valid = 0;
-        new_loc=stateSpace(i,:)+controlSpace(l,:)
+        new_loc=stateSpace(i,:)+controlSpace(l,:);
         if (new_loc(1) > mazeSize(1) || new_loc(1) < 1 || new_loc(2) > mazeSize(2) || new_loc(2) < 1)
             G(i,l) = inf;
             continue;        
@@ -83,30 +83,48 @@ for i = 1 : MN
             for x = 1:distance
                 if sum(abs(step_ball))==1
                     if (sum(step_ball)==-1)
-                        wall_coincidence=ismember([Prev_Pos+step_ball; Prev_Pos+step_ball+flip(step_ball)],walls,'rows');
+                        wall_coincidence=ismember(walls,[Prev_Pos+step_ball; Prev_Pos+step_ball+flip(step_ball)],'rows');
                     else
-                        wall_coincidence=ismember([Prev_Pos; Prev_Pos-flip(step_ball)],walls,'rows');
+                        wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(step_ball)],'rows');
                     end
-                    if sum(wall_coincidence) == 2
-                        G(i,l) = inf;
+                    wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
+                    wall_contiguous = 0;
+                    if size(wall_belonging,1) > 1
+                        for a = 2:size(wall_belonging,1)
+                            if(mod(wall_belonging(a), 2) == 0) && (wall_belonging(a)-wall_belonging(a-1) == 1)
+                                wall_contiguous = wall_contiguous+1;
+                            end
+                        end
+                    end
+                    if (wall_contiguous > 0) 
+                        G(i, l) = inf;
                         not_valid = 1;
                         continue;
                     end
                 elseif sum(abs(step_ball))>1
                     if (step_ball(1) == 1)
                         if (step_ball(2) == 1)
-                            wall_coincidence=ismember([Prev_Pos; Prev_Pos+[0 -1]; Prev_Pos + [-1 0]; Prev_Pos + [0 1]; Prev_Pos + [1 0]],walls,'rows'); 
+                            wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos+[0 -1]; Prev_Pos + [-1 0]; Prev_Pos + [0 1]; Prev_Pos + [1 0]],'rows'); 
                         elseif (step_ball(2) == -1)
-                            wall_coincidence=ismember([Prev_Pos + [0 -1]; Prev_Pos+[0 -2]; Prev_Pos + step_ball; Prev_Pos; Prev_Pos + [-1 -1]],walls,'rows'); 
+                            wall_coincidence=ismember(walls,[Prev_Pos + [0 -1]; Prev_Pos+[0 -2]; Prev_Pos + step_ball; Prev_Pos; Prev_Pos + [-1 -1]],'rows'); 
                         end
                     elseif (step_ball(1) == -1)
                         if (step_ball(2) == 1)
-                            wall_coincidence=ismember([Prev_Pos + [-1 0]; Prev_Pos+[-1 -1]; Prev_Pos + step_ball; Prev_Pos; Prev_Pos + [-2 0]],walls,'rows'); 
+                            wall_coincidence=ismember(walls, [Prev_Pos + [-1 0]; Prev_Pos+[-1 -1]; Prev_Pos + step_ball; Prev_Pos; Prev_Pos + [-2 0]],'rows'); 
                         elseif (step_ball(2) == -1)
-                            wall_coincidence=ismember([Prev_Pos + step_ball; Prev_Pos+[-1 -2]; Prev_Pos + [-2 -1]; Prev_Pos + [-1 0]; Prev_Pos + [0 -1]],walls,'rows'); 
+                            wall_coincidence=ismember(walls,[Prev_Pos + step_ball; Prev_Pos+[-1 -2]; Prev_Pos + [-2 -1]; Prev_Pos + [-1 0]; Prev_Pos + [0 -1]],'rows'); 
                         end
                     end
-                    if wall_coincidence(1)==1 && sum(wall_coincidence) > 1
+                    wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
+                    wall_contiguous = 0;
+                    if size(wall_belonging,1) > 1
+                        for a = 2:size(wall_belonging,1)
+                            if(mod(wall_belonging(a), 2) == 0) && (wall_belonging(a)-wall_belonging(a-1) == 1)
+                                wall_contiguous = wall_contiguous+1;
+                            end
+                        end
+                    end
+                    if (wall_contiguous > 0) 
                         G(i, l) = inf;
                         not_valid = 1;
                         continue;
@@ -132,14 +150,26 @@ for i = 1 : MN
             end
             Prev_Pos = stateSpace(i,:)+controlSpace(l,:);
             if sum(abs(disturbance(a, :)))==1
+
                 if (sum(disturbance(a, :))==-1)
-                    wall_coincidence=ismember([Prev_Pos+disturbance(a, :); Prev_Pos+disturbance(a, :)+flip(disturbance(a, :))],walls,'rows');
+                    wall_coincidence=ismember(walls,[Prev_Pos+disturbance(a, :); Prev_Pos+disturbance(a, :)+flip(disturbance(a, :))],'rows');
                 else
-                    wall_coincidence=ismember([Prev_Pos; Prev_Pos-flip(disturbance(a, :))],walls,'rows');
+                    wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(disturbance(a, :))],'rows');
                 end
-                if sum(wall_coincidence) == 2
+                wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
+                wall_contiguous = 0;
+                if size(wall_belonging,1) > 1
+
+                    for x = 2:size(wall_belonging,1)
+                        if(mod(wall_belonging(x), 2) == 0) && (wall_belonging(x)-wall_belonging(x-1) == 1)
+                            wall_contiguous = wall_contiguous+1;
+                        end
+                    end
+                end
+                                                       
+                if (wall_contiguous > 0) 
                     G(i,l) = G(i,l) + end_probability*Prob_disturb(a)*c_p;
-                    continue;
+                    continue
                 end
             elseif sum(abs(disturbance(a, :)))>1
                 if (disturbance(a, 1) == 1)
@@ -147,7 +177,7 @@ for i = 1 : MN
                         wall_coincidence=ismember([Prev_Pos; Prev_Pos+[0 -1]; Prev_Pos + [-1 0]; Prev_Pos + [0 1]; Prev_Pos + [1 0]],walls,'rows'); 
                     elseif (disturbance(a, 2) == -1)
                         wall_coincidence=ismember([Prev_Pos + [0 -1]; Prev_Pos+[0 -2]; Prev_Pos + disturbance(a, :); Prev_Pos; Prev_Pos + [-1 -1]],walls,'rows'); 
-                    end
+                    end    
                 elseif (disturbance(a, 1) == -1)
                     if (disturbance(a, 2) == 1)
                         wall_coincidence=ismember([Prev_Pos + [-1 0]; Prev_Pos+[-1 -1]; Prev_Pos + disturbance(a, :); Prev_Pos; Prev_Pos + [-2 0]],walls,'rows'); 
@@ -155,7 +185,8 @@ for i = 1 : MN
                         wall_coincidence=ismember([Prev_Pos + disturbance(a, :); Prev_Pos+[-1 -2]; Prev_Pos + [-2 -1]; Prev_Pos + [-1 0]; Prev_Pos + [0 -1]],walls,'rows');
                     end
                 end
-                if wall_coincidence(1)==1 && sum(wall_coincidence) > 1
+               
+                if wall_coincidence(1)==1
                     G(i,l) = G(i,l) + end_probability*Prob_disturb(a)*c_p;
                     continue;
                 end
@@ -164,6 +195,7 @@ for i = 1 : MN
             if sum(hole_at_pos) > 0
                 G(i,l) = G(i,l) + end_probability*p_f*c_r;
             end
+
       end
    end
 end
