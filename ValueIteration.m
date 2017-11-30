@@ -33,14 +33,14 @@ function [ J_opt, u_opt_ind ] = ValueIteration( P, G )
 % Variable initialization
 no_of_states = size(G,1);
 no_of_controls = size(G,2);
-u_opt_ind = zeros(no_of_states);
+u_opt_ind = zeros(1,no_of_states);
 expected_value = 0;
 count = 0;
 
 % Start with random values for costs
 J_opt = randi(1000,1,no_of_states);
-J_previous = J_opt-1;
-temporary_cost = zeros(no_of_controls);
+J_previous = minus(J_opt,ones(1,no_of_states));
+temporary_cost = zeros(1,no_of_controls);
 
 % Iterate
 while norm(J_opt-J_previous)>0.001

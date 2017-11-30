@@ -58,10 +58,6 @@ while ~abort_flag
     for i=1:no_of_states
         for j=1:no_of_states
             % P(i,j,u) is 0 for invalid u, right?
-            u_opt_ind(i);
-            if u_opt_ind(i)<1 || u_opt_ind(i)>no_of_states
-                disp("u_opt_ind(" + i + ") is " + u_opt_ind(i));
-            end
             expected_value_eval = expected_value_eval + ...
                 P(i,j,u_opt_ind(i))*J_opt(j);
         end
@@ -70,17 +66,19 @@ while ~abort_flag
         expected_value_eval = 0;
     end
     J_opt = policy_eval_cost;
+    
     % Abort when the computed cost equals the previous one
     if count==0
         abort_flag = false;
     else
         abort_flag = isequal(J_opt,J_previous);
-        diff = "Difference between previous and current cost is %d\n";
-        diff_str = sprintf(diff, norm(minus(J_previous,J_opt)));
-        fprintf(diff_str)
     end
-    
     J_previous = J_opt;
+    
+    diff = "Difference between previous and current cost is %d\n";
+    J_previous;
+    diff_str = sprintf(diff, norm(J_previous-J_opt));
+    fprintf(diff_str)
     count = count+1;
     
     % Policy Improvement
@@ -97,7 +95,7 @@ while ~abort_flag
         end
         
         % Determine minimum cost and its corresponding u (index)
-        [min_cost, min_cost_index] = min(temporary_cost);
+        [min_cost, min_cost_index] = min(policy_eval_cost);
         u_opt_ind(i) = min_cost_index(1);
     end
 end
