@@ -106,8 +106,15 @@ for i = 1 :  MN
                         wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(step_ball)],'rows');
                     end
                     wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
-                    wall_contiguous=diff(wall_belonging)==1;
-                    if sum(wall_contiguous)
+                    wall_contiguous =0;
+                    if size(wall_belonging,1) > 1
+                        for a = 2:size(wall_belonging,1)
+                            if(mod(wall_belonging(a), 2) == 0) && (wall_belonging(a)-wall_belonging(a-1) == 1)
+                                wall_contiguous = wall_contiguous+1;
+                            end
+                        end
+                    end
+                    if (wall_contiguous > 0)
 %                       flag=1;
                         break
                     end
@@ -194,8 +201,15 @@ for i = 1 :  MN
                     wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(disturbance(dist,:))],'rows');
                 end
                 wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
-                wall_contiguous=diff(wall_belonging)==1;
-                if sum(wall_contiguous)
+                wall_contiguous =0;
+                if size(wall_belonging,1) > 1
+                        for a = 2:size(wall_belonging,1)
+                            if(mod(wall_belonging(a), 2) == 0) && (wall_belonging(a)-wall_belonging(a-1) == 1)
+                                wall_contiguous = wall_contiguous+1;
+                            end
+                        end
+                    end
+                  if (wall_contiguous > 0)
                 %if (size(wall_contiguous,1)>1) && sum(wall_contiguous(1:size(wall_contiguous,2)))>1
                     Next_Pos=Prev_Pos;
                 end
