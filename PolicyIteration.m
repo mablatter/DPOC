@@ -50,6 +50,7 @@ abort_flag = false;
 
 % Iterate
 while ~abort_flag
+    % First iteration still needs to compute J_opt
     if count~=0
         J_previous = J_opt;
     end
@@ -69,15 +70,18 @@ while ~abort_flag
         policy_eval_cost(i) = G(i,u_opt_ind(i))+expected_value_eval;
         expected_value_eval = 0;
     end
+    
     J_opt = policy_eval_cost;
+    
     % Abort when the computed cost equals the previous one
     if count==0
         abort_flag = false;
     else
         abort_flag = isequal(J_opt,J_previous);
-        diff = "Difference between previous and current cost is %d\n";
-        diff_str = sprintf(diff, norm(minus(J_previous,J_opt)));
-        fprintf(diff_str)
+        % Print out cost difference for info
+%         diff = "Difference between previous and current cost is %d\n";
+%         diff_str = sprintf(diff, norm((J_previous-J_opt)));
+%         fprintf(diff_str)
     end
     
     J_previous = J_opt;

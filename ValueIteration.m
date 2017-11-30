@@ -42,8 +42,12 @@ J_opt = randi(1000,1,no_of_states);
 J_previous = minus(J_opt,ones(1,no_of_states));
 temporary_cost = zeros(1,no_of_controls);
 
+% Max difference between current and previous cost before aborting
+% iteration
+abort_threshold = 0.000000000000001;
+
 % Iterate
-while norm(J_opt-J_previous)>0.001
+while norm(J_opt-J_previous)>abort_threshold
     count = count+1;
     J_previous = J_opt;
     for i=1:no_of_states

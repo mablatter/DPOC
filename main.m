@@ -92,28 +92,28 @@ G = ComputeStageCosts( stateSpace, controlSpace, ...
 % Here we solve the stochastic shortest path problem by Value Iteration,
 % Policy Iteration, and Linear Programming.
 % VI
-% [ J_opt_vi, u_opt_ind_vi ] = ValueIteration( P, G );
-% 
-% figH = PlotMaze( 2, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
-%     controlSpace, J_opt_vi, u_opt_ind_vi );
-% figure(figH);
-% title(strcat('Value iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
+[ J_opt_vi, u_opt_ind_vi ] = ValueIteration( P, G );
+
+figH = PlotMaze( 2, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
+    controlSpace, J_opt_vi, u_opt_ind_vi );
+figure(figH);
+title(strcat('Value iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% PI
-% [ J_opt_pi, u_opt_ind_pi ] = PolicyIteration( P, G );
-% 
-% figH = PlotMaze( 3, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
-%     controlSpace, J_opt_pi, u_opt_ind_pi );
-% figure(figH);
-% title(strcat('Policy iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
+[ J_opt_pi, u_opt_ind_pi ] = PolicyIteration( P, G );
+
+figH = PlotMaze( 3, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
+    controlSpace, J_opt_pi, u_opt_ind_pi );
+figure(figH);
+title(strcat('Policy iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% LP
-[ J_opt_lp, u_opt_ind_lp ] = LinearProgramming( P, G );
-
-figH = PlotMaze( 4, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
-    controlSpace, J_opt_lp, u_opt_ind_lp );
-figure(figH);
-title(strcat('Linear programming (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
+% [ J_opt_lp, u_opt_ind_lp ] = LinearProgramming( P, G );
+% 
+% figH = PlotMaze( 4, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
+%     controlSpace, J_opt_lp, u_opt_ind_lp );
+% figure(figH);
+% title(strcat('Linear programming (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% display that terminated
 disp('terminated');
