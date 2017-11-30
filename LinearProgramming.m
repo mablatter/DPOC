@@ -30,7 +30,14 @@ function [ J_opt, u_opt_ind ] = LinearProgramming( P, G )
 %       	A (1 x MN) matrix containing the indices of the optimal control
 %       	inputs for each element of the state space.
 
-% put your code here
+% Variable initialization
+no_of_states = size(G,1);
+no_of_controls = size(G,2);
+expected_value = 0;
+
+J_opt = randi(1000,1,no_of_states);
+u_opt_ind = zeros(1,no_of_states);
+
 
 end
 

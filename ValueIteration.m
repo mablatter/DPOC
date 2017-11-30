@@ -33,25 +33,32 @@ function [ J_opt, u_opt_ind ] = ValueIteration( P, G )
 % Variable initialization
 no_of_states = size(G,1);
 no_of_controls = size(G,2);
+
 u_opt_ind = zeros(1,no_of_states);
+temporary_cost = zeros(1,no_of_controls);
 expected_value = 0;
 count = 0;
 
-% Start with random values for costs
+% Start with random values for costs, J_previous such that abort is false
 J_opt = randi(1000,1,no_of_states);
-J_previous = minus(J_opt,ones(1,no_of_states));
-temporary_cost = zeros(1,no_of_controls);
+J_previous = J_opt-ones(1,no_of_states);
 
 % Max difference between current and previous cost before aborting
 % iteration
-abort_threshold = 0.000000000000001;
+abort_threshold = 0.000001;
 
 % Iterate
 while norm(J_opt-J_previous)>abort_threshold
+    % Count iterations (just for info) and store current cost to compare
+    % later
     count = count+1;
     J_previous = J_opt;
+    
+    % Computes cost vector for each state by evaluating cost for each
+    % control input (i.e. summing stage cost and expected value) and then
+    % determining the minimum
     for i=1:no_of_states
-        for u=1:no_of_controls % should be allowed control inputs
+        for u=1:no_of_controls
             for j=1:no_of_states
                 % P(i,j,u) is 0 for invalid u, right?
                 expected_value = expected_value + P(i,j,u)*J_opt(j);
@@ -64,6 +71,7 @@ while norm(J_opt-J_previous)>abort_threshold
         [min_cost, min_cost_index] = min(temporary_cost);
         J_opt(i) = min_cost(1);
         u_opt_ind(i) = min_cost_index(1);
+        
     end
 end
 

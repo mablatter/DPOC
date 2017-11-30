@@ -36,17 +36,16 @@ no_of_controls = size(G,2);
 expected_value_eval = 0;
 expected_value_improv = 0;
 count = 0;
+% True as soon as the computed J_opt equals the J_opt we started from
+abort_flag = false;
 
-% Start with random policy, e.g. 1 (stay) as it's allowed for all states
-u_opt_ind = ones(1,no_of_states);
 % Temporary array to hold updated cost for current policy (J_mu^h(i))
 policy_eval_cost = ones(1,no_of_states);
 J_opt = policy_eval_cost;
-
 temporary_cost = zeros(1,no_of_controls);
 
-% True as soon as the computed J_opt equals the J_opt we started from
-abort_flag = false;
+% Start with random policy, e.g. 1 (stay) as it's allowed for all states
+u_opt_ind = ones(1,no_of_states);
 
 % Iterate
 while ~abort_flag
@@ -59,21 +58,19 @@ while ~abort_flag
     for i=1:no_of_states
         for j=1:no_of_states
             % P(i,j,u) is 0 for invalid u, right?
-            u_opt_ind(i);
-            if u_opt_ind(i)<1 || u_opt_ind(i)>no_of_states
-                disp("u_opt_ind(" + i + ") is " + u_opt_ind(i));
-            end
             expected_value_eval = expected_value_eval + ...
                 P(i,j,u_opt_ind(i))*J_opt(j);
         end
         
         policy_eval_cost(i) = G(i,u_opt_ind(i))+expected_value_eval;
         expected_value_eval = 0;
+        
     end
     
     J_opt = policy_eval_cost;
     
-    % Abort when the computed cost equals the previous one
+    % Abort when the computed cost equals the previous one, first iteration
+    % always false because no J_previous available
     if count==0
         abort_flag = false;
     else
@@ -84,6 +81,7 @@ while ~abort_flag
 %         fprintf(diff_str)
     end
     
+    % Store current cost to be compared for aborting while loop
     J_previous = J_opt;
     count = count+1;
     
@@ -100,7 +98,7 @@ while ~abort_flag
             expected_value_improv = 0;
         end
         
-        % Determine minimum cost and its corresponding u (index)
+        % Determine u (index) corresponding to minimum cost
         [min_cost, min_cost_index] = min(temporary_cost);
         u_opt_ind(i) = min_cost_index(1);
     end

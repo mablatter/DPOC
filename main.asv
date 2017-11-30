@@ -35,7 +35,7 @@ c_r = 2;
 %% define problem size and generate maze
 shouldGenerateMaze = true;
 if shouldGenerateMaze
-	mazeSize = [ 10, 8 ]; % N, M
+	mazeSize = [ 3, 4 ]; % N, M
 	[ walls, targetCell, holes, resetCell ] = GenerateMaze( mazeSize( 1 ), ...
         mazeSize( 2 ), true );
     % This generates a new random maze.
@@ -78,10 +78,9 @@ P = ComputeTransitionProbabilities( stateSpace, controlSpace, ...
 % If a control input l is not feasible for a particular state i, the
 % transition  probabilities to all states can be set to zero.
 
-a=find(stateSpace(:,1)==targetCell(1));
-c=find(stateSpace(:,2)==targetCell(2));
-
-termination_index = intersect(a,c);
+[a b]=find(stateSpace==targetCell(1));
+[c d]=find(stateSpace(2)==targetCell(2));
+termination_index = intersect(a,c)
 P(termination_index,:,:)=0;
 P(:,termination_index,:)=0;
 
