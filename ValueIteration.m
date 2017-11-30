@@ -43,12 +43,13 @@ J_previous = J_opt-1;
 temporary_cost = zeros(no_of_controls);
 
 % Iterate
-while norm(J_opt-J_previous)>0.0001
+while norm(J_opt-J_previous)>0.001
     count = count+1;
     J_previous = J_opt;
     for i=1:no_of_states
         for u=1:no_of_controls % should be allowed control inputs
             for j=1:no_of_states
+                % P(i,j,u) is 0 for invalid u, right?
                 expected_value = expected_value + P(i,j,u)*J_opt(j);
             end
             temporary_cost(u) = G(i,u)+expected_value;

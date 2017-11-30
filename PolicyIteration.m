@@ -32,10 +32,37 @@ function [ J_opt, u_opt_ind ] = PolicyIteration( P, G )
 
 % put your code here
 
-no_of_states = size(G,1);
-u_opt_ind = randi(no_of_states,1,no_of_states);
+% Start with random values for policy
 
-J_opt = G
+% Variable initialization
+no_of_states = size(G,1);
+no_of_controls = size(G,2);
+expected_value = 0;
+count = 0;
+
+% Start with random policy, easiest is 0 as its allowed for all states
+u_opt_ind = zeros(no_of_states);
+temporary_cost = zeros(no_of_controls);
+
+% Iterate
+count = count+1;
+
+% Policy Evaluation
+for i=1:no_of_states
+    for j=1:no_of_states
+        % P(i,j,u) is 0 for invalid u, right?
+        expected_value = expected_value + P(i,j,u_opt_ind(i))*J_opt(j);
+    end
+    
+    temporary_cost(i) = G(i,u_opt_ind(i))+expected_value;
+    expected_value = 0;
+end
+J_opt = temporary_cost;
+
+% Policy Improvement
+% TODO
+
+disp("Number of policy iterations: " + count);
 
 end
 

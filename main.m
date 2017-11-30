@@ -35,7 +35,7 @@ c_r = 2;
 %% define problem size and generate maze
 shouldGenerateMaze = true;
 if shouldGenerateMaze
-	mazeSize = [ 8, 10 ]; % N, M
+	mazeSize = [ 5, 6 ]; % N, M
 	[ walls, targetCell, holes, resetCell ] = GenerateMaze( mazeSize( 1 ), ...
         mazeSize( 2 ), true );
     % This generates a new random maze.
