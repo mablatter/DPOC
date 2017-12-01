@@ -38,6 +38,13 @@ expected_value = 0;
 J_opt = randi(1000,1,no_of_states);
 u_opt_ind = zeros(1,no_of_states);
 
+weights = ones(no_of_states,1);
+A = eye(no_of_states);
+constraints = zeros(1,no_of_states);
+
+% TODO calculate constraints, i.e. initial V_0(i)
+J_opt = linprog(weights,A,constraints);
+
 
 end
 
