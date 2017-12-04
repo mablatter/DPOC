@@ -35,7 +35,7 @@ c_r = 2;
 %% define problem size and generate maze
 shouldGenerateMaze = true;
 if shouldGenerateMaze
-	mazeSize = [ 10, 12 ]; % N, M
+	mazeSize = [ 20, 21 ]; % N, M
 	[ walls, targetCell, holes, resetCell ] = GenerateMaze( mazeSize( 1 ), ...
         mazeSize( 2 ), true );
     % This generates a new random maze.
@@ -105,12 +105,12 @@ figure(figH);
 title(strcat('Value iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% PI
-% [ J_opt_pi, u_opt_ind_pi ] = PolicyIteration( P, G );
-% 
-% figH = PlotMaze( 3, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
-%     controlSpace, J_opt_pi, u_opt_ind_pi );
-% figure(figH);
-% title(strcat('Policy iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
+[ J_opt_pi, u_opt_ind_pi ] = PolicyIteration( P, G );
+
+figH = PlotMaze( 3, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
+    controlSpace, J_opt_pi, u_opt_ind_pi );
+figure(figH);
+title(strcat('Policy iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% LP
 [ J_opt_lp, u_opt_ind_lp ] = LinearProgramming( P, G );
@@ -119,6 +119,33 @@ figH = PlotMaze( 4, mazeSize, walls, targetCell, holes, resetCell, stateSpace, .
     controlSpace, J_opt_lp, u_opt_ind_lp );
 figure(figH);
 title(strcat('Linear programming (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
+
+%% check if all J_opt are same
+same = true;
+if J_opt_vi ~= J_opt_pi
+    disp('Optimal costs vi and pi are not identical')
+    same = false;
+end
+if J_opt_vi ~= J_opt_lp
+    disp('J_opt_vi not equal J_opt_lp')
+    same = false;
+end
+if J_opt_pi ~= J_opt_lp
+    disp('J_opt_pi not equal J_opt_lp')
+    same = false;
+end 
+if same
+    disp('Optimal costs are identical')
+end
+same = true;
+
+if u_opt_ind_vi ~= u_opt_ind_pi
+    disp('Optimal policies vi and pi are not identical')
+    same = false;
+end
+if same
+    disp('Optimal policies are identical')
+end
 
 %% display that terminated
 disp('terminated');
