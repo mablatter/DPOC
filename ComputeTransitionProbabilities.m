@@ -231,7 +231,7 @@ for i = 1 :  MN
 
             X_Prev= sub2ind(flip(mazeSize),Prev_Pos(2),Prev_Pos(1));
 
-            if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
+            if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows')) > 0
                 P(i,r,Control_input)= P(i,r,Control_input)+p_f*joint_prob;
                 P(i,X,Control_input)= (1-p_f)*joint_prob;
             elseif X==X_Prev && sum(abs(disturbance(dist,:)))
