@@ -35,7 +35,7 @@ c_r = 2;
 %% define problem size and generate maze
 shouldGenerateMaze = true;
 if shouldGenerateMaze
-	mazeSize = [ 20, 20 ]; % N, M
+	mazeSize = [ 4, 5 ]; % N, M
 	[ walls, targetCell, holes, resetCell ] = GenerateMaze( mazeSize( 1 ), ...
         mazeSize( 2 ), true );
     % This generates a new random maze.
@@ -115,12 +115,12 @@ G = ComputeStageCosts( stateSpace, controlSpace, ...
 % title(strcat('Policy iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% LP
-% [ J_opt_lp, u_opt_ind_lp ] = LinearProgramming( P, G );
-% 
-% figH = PlotMaze( 4, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
-%     controlSpace, J_opt_lp, u_opt_ind_lp );
-% figure(figH);
-% title(strcat('Linear programming (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
+[ J_opt_lp, u_opt_ind_lp ] = LinearProgramming( P, G );
+
+figH = PlotMaze( 4, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
+    controlSpace, J_opt_lp, u_opt_ind_lp );
+figure(figH);
+title(strcat('Linear programming (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% display that terminated
 disp('terminated');

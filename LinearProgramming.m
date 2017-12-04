@@ -33,18 +33,29 @@ function [ J_opt, u_opt_ind ] = LinearProgramming( P, G )
 % Variable initialization
 no_of_states = size(G,1);
 no_of_controls = size(G,2);
-expected_value = 0;
 
 J_opt = randi(1000,1,no_of_states);
-u_opt_ind = zeros(1,no_of_states);
+u_opt_ind = ones(1,no_of_states);
 
-weights = ones(no_of_states,1);
-A = eye(no_of_states);
-constraints = zeros(1,no_of_states);
+weights = -ones(1,no_of_states);
+A = zeros(no_of_states*no_of_controls,no_of_states);
+constraints = zeros(no_of_states*no_of_controls,1);
 
-% TODO calculate constraints, i.e. initial V_0(i)
-J_opt = linprog(weights,A,constraints);
+% Rewrite problem such that it becomes a linear program (matrix only)
+for u=1:no_of_controls
+    start_index = no_of_states*(u-1)+1;
+    end_index = no_of_states*u;
+    A(start_index:end_index,:) = eye(no_of_states) - P(:,:,u);
+    constraints(start_index:end_index,:) = G(:,u);
+end
+% TODO make it select indices where constraints is inf
+constraints(find(constraints,inf)) = 1000000;
 
+[J_opt, FVAL, EXITFLAG] = linprog(weights',A,constraints);
+J_opt
+FVAL
+EXITFLAG
+%disp('Linprog exited with ' + EXITFLAG);
 
 end
 
