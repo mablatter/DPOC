@@ -49,12 +49,12 @@ for u=1:no_of_controls
     constraints(start_index:end_index,:) = G(:,u);
 end
 % TODO make it select indices where constraints is inf
-constraints(find(constraints,inf)) = 1000000;
+constraints(find(constraints==inf)) = 1000000;
 
 [J_opt, FVAL, EXITFLAG] = linprog(weights',A,constraints);
-J_opt
-FVAL
-EXITFLAG
+%J_opt
+%FVAL
+%EXITFLAG
 %disp('Linprog exited with ' + EXITFLAG);
 
 end

@@ -35,7 +35,7 @@ c_r = 2;
 %% define problem size and generate maze
 shouldGenerateMaze = true;
 if shouldGenerateMaze
-	mazeSize = [ 4, 5 ]; % N, M
+	mazeSize = [ 10, 12 ]; % N, M
 	[ walls, targetCell, holes, resetCell ] = GenerateMaze( mazeSize( 1 ), ...
         mazeSize( 2 ), true );
     % This generates a new random maze.
@@ -83,8 +83,6 @@ c=find(stateSpace(:,2)==targetCell(2));
 
 termination_index = intersect(a,c);
 P(termination_index,:,:)=0;
-P(:,termination_index,:)=0;
-
 %% compute stage costs
 G = ComputeStageCosts( stateSpace, controlSpace, ...
     mazeSize, walls, targetCell, holes, resetCell, p_f, c_p, c_r );
@@ -99,12 +97,12 @@ G = ComputeStageCosts( stateSpace, controlSpace, ...
 % Here we solve the stochastic shortest path problem by Value Iteration,
 % Policy Iteration, and Linear Programming.
 % VI
-% [ J_opt_vi, u_opt_ind_vi ] = ValueIteration( P, G );
-% 
-% figH = PlotMaze( 2, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
-%     controlSpace, J_opt_vi, u_opt_ind_vi );
-% figure(figH);
-% title(strcat('Value iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
+[ J_opt_vi, u_opt_ind_vi ] = ValueIteration( P, G );
+
+figH = PlotMaze( 2, mazeSize, walls, targetCell, holes, resetCell, stateSpace, ...
+    controlSpace, J_opt_vi, u_opt_ind_vi );
+figure(figH);
+title(strcat('Value iteration (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
 %% PI
 % [ J_opt_pi, u_opt_ind_pi ] = PolicyIteration( P, G );
