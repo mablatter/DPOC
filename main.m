@@ -143,6 +143,14 @@ if u_opt_ind_vi ~= u_opt_ind_pi
     disp('Optimal policies vi and pi are not identical')
     same = false;
 end
+if u_opt_ind_lp ~= u_opt_ind_pi
+    disp('Optimal policies lp and pi are not identical')
+    same = false;
+end
+if u_opt_ind_lp ~= u_opt_ind_vi
+    disp('Optimal policies lp and vi are not identical')
+    same = false;
+end
 if same
     disp('Optimal policies are identical')
 end

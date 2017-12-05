@@ -57,5 +57,17 @@ constraints(find(constraints==inf)) = 1000000;
 %EXITFLAG
 %disp('Linprog exited with ' + EXITFLAG);
 
+%Find optimal policy
+for i=1:no_of_states
+    for u=1:no_of_controls
+        expected_value = G(i,u);
+        for j=1:no_of_states
+            expected_value = expected_value + P(i,j,u)*J_opt(j);
+        end
+        %HACK
+        if abs(expected_value-J_opt(i)) < 0.00001
+            u_opt_ind(i) = u;
+        end
+    end
 end
 
