@@ -57,21 +57,6 @@ function P = ComputeTransitionProbabilities( stateSpace, controlSpace, mazeSize,
 %           probability from state i to state j if control input l is
 %           applied.
 
-% outer_boundaries=[];
-% 
-% for i=0:mazeSize(1)
-%     for j=0:mazeSize(2)-1
-%         if i==0 ||i==mazeSize(1)
-%             outer_boundaries=[outer_boundaries; [i j];[i j+1]];
-%         elseif i>0
-%             outer_boundaries=[outer_boundaries; [i-1 0];[i 0] ;[i-1 6];[i 6]];
-%         end
-%     end
-% end
-% 
-% walls=[walls; outer_boundaries]
-
-
 L= size(controlSpace,1);
 MN=size(stateSpace,1);
 disturbance=[0 0; 1 0; 1 1; 0 1; -1 1; -1 0; -1 -1; 0 -1; 1 -1];
@@ -80,30 +65,185 @@ Prob_disturb=[1/9 1/9 1/9 1/9 1/9 1/9 1/9 1/9 1/9];
 P=zeros(MN,MN,L);
 r= sub2ind(flip(mazeSize),resetCell(2),resetCell(1));
 
+termination_index= sub2ind(flip(mazeSize),targetCell(2),targetCell(1));
+
+
 for i = 1 :  MN
-    i_State=i;
     adapted_controlSpace=[];
-    for control=1:L
-    %    out_bounds=stateSpace(i,:)+controlSpace(l,:);
-        Prev_Pos=stateSpace(i_State,:);
-%         X= sub2ind(flip(mazeSize),Next_Pos(2),Next_Pos(1))
-%         if sum((stateSpace(j,:)-stateSpace(i,:))==controlSpace(l,:))==2
-        distance=max(max(abs(controlSpace(control,:))));
-        if ~distance
-            adapted_controlSpace= [adapted_controlSpace;  controlSpace(control,:)];
-        else
-            step_ball=controlSpace(control,:)./distance;
-%             flag=0;
-            for p=1:distance
-                Next_Pos=Prev_Pos+step_ball; 
+	if i==termination_index
+%        P(i,i,:)=1
+    else
+        for control=1:L
+            Prev_Pos=stateSpace(i,:);
+            distance=max(max(abs(controlSpace(control,:))));
+            if ~distance
+                adapted_controlSpace= [adapted_controlSpace;  controlSpace(control,:)];
+            else
+                step_ball=controlSpace(control,:)./distance;
+                for p=1:distance
+                    Next_Pos=Prev_Pos+step_ball; 
+                    if Next_Pos(1)>mazeSize(1) || Next_Pos(2)>mazeSize(2) || Next_Pos(1)<1  || Next_Pos(2)<1
+                        break
+                    elseif sum(abs(step_ball))==1
+                        if (sum(step_ball)==-1)
+                            wall_coincidence=ismember(walls,[Prev_Pos+step_ball; Prev_Pos + [-1 -1]],'rows');
+                        else
+                            wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(step_ball)],'rows');
+                        end
+                        wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
+                        wall_contiguous =0;
+                        if size(wall_belonging,1) > 1
+                            for a = 2:size(wall_belonging,1)
+                                if(mod(wall_belonging(a), 2) == 0) && (wall_belonging(a)-wall_belonging(a-1) == 1)
+                                    wall_contiguous = wall_contiguous+1;
+                                end
+                            end
+                        end
+                        if wall_contiguous
+                            break
+                        end
+
+                    elseif sum(abs(step_ball))>1
+                        vector_check=step_ball;
+                        vector_check(vector_check>0)=0;
+                        wall_coincidence=ismember(walls,[Prev_Pos+vector_check; Prev_Pos+vector_check],'rows');
+
+                        if sum(wall_coincidence)
+                            break
+                        end
+                    end
+                    Prev_Pos=Next_Pos;
+                    if p==distance  %If we reach the virtual destination without crossing walls, it is a valid control input.
+                        adapted_controlSpace= [adapted_controlSpace;  controlSpace(control,:)];
+                    end
+                end
+            end
+        end
+
+        for control = 1:size(adapted_controlSpace,1)
+            Control_input=find(controlSpace(:, 1) == adapted_controlSpace(control,1) & controlSpace(:, 2) == adapted_controlSpace(control,2));
+            Prev_Pos=stateSpace(i,:);
+            X_Prev=i;
+            distance=max(max(abs(adapted_controlSpace(control,:))));
+            if ~distance
+                P(X_Prev,X_Prev,Control_input)= 1;
+            else
+                step_ball=adapted_controlSpace(control,:)./distance;
+                starting_probability=1;
+                cumulative_probability=starting_probability;
+                for p=1:distance
+                    Next_Pos=Prev_Pos+step_ball;
+                    X= sub2ind(flip(mazeSize),Next_Pos(2),Next_Pos(1));
+                        %Hole detection
+%                     if p==1
+%                         if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
+%                             %ismember(controlSpace,adapted_controlSpace(l,:),'rows'))
+%                             P(i,r,Control_input)= p_f;
+%                             P(i,X,Control_input)= (1-p_f); 
+%                         else
+%                             P(i,X,Control_input)= 1;
+%                         end
+%                     end
+% 
+%                     if p>1
+%                         X_Prev= sub2ind(flip(mazeSize),Prev_Pos(2),Prev_Pos(1));
+%                         if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
+%                             P(i,r,Control_input)= P(i,r,Control_input)+p_f*(P(i,X_Prev,Control_input));%%No. P(i_State,X,l)=0
+%                             P(i,X,Control_input)= (1-p_f)*P(i,X_Prev,Control_input); 
+%                             P(i,X_Prev,Control_input)=0;
+%                         end
+%                         if ~(X==X_Prev)
+%                             P(i,X,Control_input)= P(i,X_Prev,Control_input)+P(i,X,Control_input); 
+%                             P(i,X_Prev,Control_input)= 0;
+%                         end  
+%                     end   
+%                     i_State=X;
+%                     Prev_Pos=Next_Pos; 
+                
+                    if p>1
+                        P(i,X_Prev,Control_input)=P(i,X_Prev,Control_input)-cumulative_probability;
+                    end
+                    
+                    if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
+                        P(i,r,Control_input)= p_f*cumulative_probability+P(i,r,Control_input);
+                        cumulative_probability=(1-p_f)*cumulative_probability;
+                    end
+                    
+                    P(i,X,Control_input)= cumulative_probability+P(i,X,Control_input);
+                    
+                    X_Prev=X;
+                    Prev_Pos=Next_Pos; 
+                end
+            end                        
+
+%            %Disturbance
+%             prior_prob=P(i,X_Prev,Control_input);
+%             for dist = 1:size(disturbance,1)
+%                 Next_Pos=Prev_Pos+disturbance(dist,:);                  
+%                 if Next_Pos(1)>mazeSize(1) || Next_Pos(2)>mazeSize(2) || Next_Pos(1)<1  || Next_Pos(2)<1
+%                     Next_Pos=Prev_Pos;
+%                 elseif sum(abs(disturbance(dist,:)))==1
+%                     if (sum(disturbance(dist,:))==-1)
+%                         wall_coincidence=ismember(walls,[Prev_Pos+disturbance(dist,:); Prev_Pos+ [-1 -1]],'rows'); 
+%                     else
+%                         wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(disturbance(dist,:))],'rows');
+%                     end
+%                     wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
+%                     wall_contiguous =0;
+%                     if size(wall_belonging,1) > 1
+%                         for a = 2:size(wall_belonging,1)
+%                             if(mod(wall_belonging(a), 2) == 0) && (wall_belonging(a)-wall_belonging(a-1) == 1)
+%                                 wall_contiguous = wall_contiguous+1;
+%                             end
+%                         end
+%                     end
+%                     if wall_contiguous
+%                     %if (size(wall_contiguous,1)>1) && sum(wall_contiguous(1:size(wall_contiguous,2)))>1
+%                         Next_Pos=Prev_Pos;
+%                     end
+%                 elseif sum(abs(disturbance(dist,:)))>1
+%                     vector_check=disturbance(dist,:);
+%                     vector_check(vector_check>0)=0;
+%                     wall_coincidence=ismember(walls,[Prev_Pos+vector_check; Prev_Pos+vector_check],'rows');
+%                 %                             wall_belonging=find(wall_coincidence,size(wall_coincidence,1))
+%                 %                             wall_contiguous=diff(wall_belonging)==1
+%                     if sum(wall_coincidence)
+%                         Next_Pos=Prev_Pos;
+%                     end
+%                 end
+% 
+%                 X= sub2ind(flip(mazeSize),Next_Pos(2),Next_Pos(1));
+% 
+%                 %Hole detection
+%                 joint_prob=prior_prob*Prob_disturb(dist);
+% 
+% %                X_Prev= sub2ind(flip(mazeSize),Prev_Pos(2),Prev_Pos(1));
+% 
+%                 if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
+%                     P(i,r,Control_input)= P(i,r,Control_input)+p_f*joint_prob;
+%                     P(i,X,Control_input)= (1-p_f)*joint_prob;
+%                 elseif X==X_Prev && sum(abs(disturbance(dist,:)))
+%                     P(i,X,Control_input)=P(i,X,Control_input)+joint_prob;
+%                 else
+%                     P(i,X,Control_input)= joint_prob;
+%                 end
+%             end
+
+
+            %Disturbance
+            prior_prob=P(i,X_Prev,Control_input);
+            for dist = 1:size(disturbance,1)
+                if i==41 && Control_input==4
+                    lel=1;
+                end
+                Next_Pos=Prev_Pos+disturbance(dist,:);                  
                 if Next_Pos(1)>mazeSize(1) || Next_Pos(2)>mazeSize(2) || Next_Pos(1)<1  || Next_Pos(2)<1
-%                   flag=1;
-                    break
-                elseif sum(abs(step_ball))==1
-                    if (sum(step_ball)==-1)
-                        wall_coincidence=ismember(walls,[Prev_Pos+step_ball; Prev_Pos+step_ball+flip(step_ball)],'rows');
+                    Next_Pos=Prev_Pos;
+                elseif sum(abs(disturbance(dist,:)))==1
+                    if (sum(disturbance(dist,:))==-1)
+                        wall_coincidence=ismember(walls,[Prev_Pos+disturbance(dist,:); Prev_Pos+ [-1 -1]],'rows'); 
                     else
-                        wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(step_ball)],'rows');
+                        wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(disturbance(dist,:))],'rows');
                     end
                     wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
                     wall_contiguous =0;
@@ -114,133 +254,38 @@ for i = 1 :  MN
                             end
                         end
                     end
-                    if (wall_contiguous > 0)
-%                       flag=1;
-                        break
+                    if wall_contiguous
+                    %if (size(wall_contiguous,1)>1) && sum(wall_contiguous(1:size(wall_contiguous,2)))>1
+                        Next_Pos=Prev_Pos;
                     end
-    %               if (size(wall_contiguous,1)>1) && sum(wall_contiguous(1:size(wall_contiguous,2)))>1
-    %                     Next_Pos=Prev_Pos;
-                elseif sum(abs(step_ball))>1
-                    vector_check=step_ball;
+                elseif sum(abs(disturbance(dist,:)))>1
+                    vector_check=disturbance(dist,:);
                     vector_check(vector_check>0)=0;
                     wall_coincidence=ismember(walls,[Prev_Pos+vector_check; Prev_Pos+vector_check],'rows');
-    %                             wall_belonging=find(wall_coincidence,size(wall_coincidence,1))
-    %                             wall_contiguous=diff(wall_belonging)==1
+                %                             wall_belonging=find(wall_coincidence,size(wall_coincidence,1))
+                %                             wall_contiguous=diff(wall_belonging)==1
                     if sum(wall_coincidence)
-    %                 	flag=1;
-                        break
+                        Next_Pos=Prev_Pos;
                     end
                 end
-    %             if(flag==1)
-    %                 break
-                Prev_Pos=Next_Pos;
 
-                if p==distance
-                        adapted_controlSpace= [adapted_controlSpace;  controlSpace(control,:)];
-                end
-            end
-        end
-    end
-        
-    adapted_controlSpace;
-    
-    for control = 1:size(adapted_controlSpace,1)
-        if i==1
-            a=1;
-        end
-        Control_input=find(controlSpace(:, 1) == adapted_controlSpace(control,1) & controlSpace(:, 2) == adapted_controlSpace(control,2));
-        Prev_Pos=stateSpace(i,:);
-        i_State=i;
-        distance=max(max(abs(adapted_controlSpace(control,:))));
-        if ~distance
-            P(i_State,i_State,control)= 1;
-        else
-            step_ball=adapted_controlSpace(control,:)./distance;
-            for p=1:distance
-                Next_Pos=Prev_Pos+step_ball;
                 X= sub2ind(flip(mazeSize),Next_Pos(2),Next_Pos(1));
-                    %Hole detection
-                if p==1
-                    if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
-                        %ismember(controlSpace,adapted_controlSpace(l,:),'rows'))
-                        P(i,r,Control_input)= p_f;
-                        P(i,X,Control_input)= (1-p_f); 
-                    else
-                        P(i,X,Control_input)= 1;
-                    end
-                end
 
-                if p>1
-                    X_Prev= sub2ind(flip(mazeSize),Prev_Pos(2),Prev_Pos(1));
-                    if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))
-                        P(i,r,Control_input)= P(i,r,Control_input)+p_f*(P(i,X_Prev,Control_input));%%No. P(i_State,X,l)=0
-                        P(i,X,Control_input)= (1-p_f)*P(i,X_Prev,Control_input); 
-                        P(i,X_Prev,Control_input)=0;
-                    end
-                    if ~(X==X_Prev)
-                        P(i,X,Control_input)= P(i,X_Prev,Control_input)+P(i,X,Control_input); 
-                        P(i,X_Prev,Control_input)= 0;
-                    end  
-                end      
-                i_State=X;
-                Prev_Pos=Next_Pos; 
-            end
-        end                        
-    
-         
-       %Disturbance
-        prior_prob=P(i,i_State,Control_input);
-        for dist = 1:size(disturbance,1)
-            Next_Pos=Prev_Pos+disturbance(dist,:);                  
-            if Next_Pos(1)>mazeSize(1) || Next_Pos(2)>mazeSize(2) || Next_Pos(1)<1  || Next_Pos(2)<1
-            Next_Pos=Prev_Pos;
-            elseif sum(abs(disturbance(dist,:)))==1
-                if (sum(disturbance(dist,:))==-1)
-                    wall_coincidence=ismember(walls,[Prev_Pos+disturbance(dist,:); Prev_Pos+disturbance(dist,:)+flip(disturbance(dist,:))],'rows');
+                %Hole detection
+                joint_prob=prior_prob*Prob_disturb(dist);
+
+%                X_Prev= sub2ind(flip(mazeSize),Prev_Pos(2),Prev_Pos(1));
+
+                if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows'))&& sum(abs(disturbance(dist,:)))
+                    P(i,r,Control_input)= P(i,r,Control_input)+p_f*joint_prob;
+                    P(i,X,Control_input)= P(i,X,Control_input)+(1-p_f)*joint_prob;
+                elseif X==X_Prev && ~sum(abs(disturbance(dist,:)))
+                    P(i,X,Control_input)=joint_prob;
                 else
-                    wall_coincidence=ismember(walls,[Prev_Pos; Prev_Pos-flip(disturbance(dist,:))],'rows');
+                    P(i,X,Control_input)= joint_prob+P(i,X,Control_input);
                 end
-                wall_belonging=find(wall_coincidence,size(wall_coincidence,1));
-                wall_contiguous =0;
-                if size(wall_belonging,1) > 1
-                        for a = 2:size(wall_belonging,1)
-                            if(mod(wall_belonging(a), 2) == 0) && (wall_belonging(a)-wall_belonging(a-1) == 1)
-                                wall_contiguous = wall_contiguous+1;
-                            end
-                        end
-                    end
-                  if (wall_contiguous > 0)
-                %if (size(wall_contiguous,1)>1) && sum(wall_contiguous(1:size(wall_contiguous,2)))>1
-                    Next_Pos=Prev_Pos;
-                end
-            elseif sum(abs(disturbance(dist,:)))>1
-                vector_check=disturbance(dist,:);
-                vector_check(vector_check>0)=0;
-                wall_coincidence=ismember(walls,[Prev_Pos+vector_check; Prev_Pos+vector_check],'rows');
-            %                             wall_belonging=find(wall_coincidence,size(wall_coincidence,1))
-            %                             wall_contiguous=diff(wall_belonging)==1
-                if sum(wall_coincidence)
-                    Next_Pos=Prev_Pos;
-                end
-            end
-
-            X= sub2ind(flip(mazeSize),Next_Pos(2),Next_Pos(1));
-
-            %Hole detection
-            joint_prob=prior_prob*Prob_disturb(dist);
-
-            X_Prev= sub2ind(flip(mazeSize),Prev_Pos(2),Prev_Pos(1));
-
-            if ~isempty(holes) && sum(ismember(holes,Next_Pos,'rows')) > 0
-                P(i,r,Control_input)= P(i,r,Control_input)+p_f*joint_prob;
-                P(i,X,Control_input)= (1-p_f)*joint_prob;
-            elseif X==X_Prev && sum(abs(disturbance(dist,:)))
-                P(i,X,Control_input)=P(i,X,Control_input)+joint_prob;
-            else
-                P(i,X,Control_input)= joint_prob;
-            end
+            end                
         end
-    end
-    %if (stateSpace(j,:)-stateSpace(i,:))==controlSpace(l,:)
+	end
 end
 

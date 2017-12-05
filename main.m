@@ -78,11 +78,11 @@ P = ComputeTransitionProbabilities( stateSpace, controlSpace, ...
 % If a control input l is not feasible for a particular state i, the
 % transition  probabilities to all states can be set to zero.
 
-a=find(stateSpace(:,1)==targetCell(1));
-c=find(stateSpace(:,2)==targetCell(2));
-
-termination_index = intersect(a,c);
-P(termination_index,:,:)=0;
+% a=find(stateSpace(:,1)==targetCell(1));
+% c=find(stateSpace(:,2)==targetCell(2));
+% 
+% termination_index = intersect(a,c);
+% P(termination_index,:,:)=0;
 %% compute stage costs
 G = ComputeStageCosts( stateSpace, controlSpace, ...
     mazeSize, walls, targetCell, holes, resetCell, p_f, c_p, c_r );
