@@ -104,7 +104,7 @@ while ~abort_flag
     end
 end
     
-disp("Number of policy iterations: " + count);
+disp('Number of policy iterations:' + count);
 
 end
 

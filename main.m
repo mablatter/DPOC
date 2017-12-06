@@ -33,7 +33,7 @@ c_r = 2;
 % as additional penalty.
 
 %% define problem size and generate maze
-shouldGenerateMaze = true;
+shouldGenerateMaze = false;
 if shouldGenerateMaze
 	mazeSize = [ 20, 21 ]; % N, M
 	[ walls, targetCell, holes, resetCell ] = GenerateMaze( mazeSize( 1 ), ...
@@ -126,11 +126,11 @@ if J_opt_vi ~= J_opt_pi
     disp('Optimal costs vi and pi are not identical')
     same = false;
 end
-if J_opt_vi ~= J_opt_lp
+if J_opt_vi ~= J_opt_lp'
     disp('J_opt_vi not equal J_opt_lp')
     same = false;
 end
-if J_opt_pi ~= J_opt_lp
+if J_opt_pi ~= J_opt_lp'
     disp('J_opt_pi not equal J_opt_lp')
     same = false;
 end 
