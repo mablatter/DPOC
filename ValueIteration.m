@@ -75,7 +75,7 @@ while norm(J_opt-J_previous)>abort_threshold
     end
 end
 
-disp("Number of value iterations: " + count);
+disp('Number of value iterations:' + count);
 
 end
 
