@@ -34,7 +34,6 @@ function [ J_opt, u_opt_ind ] = LinearProgramming( P, G )
 no_of_states = size(G,1);
 no_of_controls = size(G,2);
 
-J_opt = randi(1000,1,no_of_states);
 u_opt_ind = ones(1,no_of_states);
 
 weights = -ones(1,no_of_states);

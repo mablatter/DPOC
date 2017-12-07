@@ -33,9 +33,9 @@ c_r = 2;
 % as additional penalty.
 
 %% define problem size and generate maze
-shouldGenerateMaze = false;
+shouldGenerateMaze = true;
 if shouldGenerateMaze
-	mazeSize = [ 20, 21 ]; % N, M
+	mazeSize = [ 12, 14 ]; % N, M
 	[ walls, targetCell, holes, resetCell ] = GenerateMaze( mazeSize( 1 ), ...
         mazeSize( 2 ), true );
     % This generates a new random maze.
@@ -78,11 +78,6 @@ P = ComputeTransitionProbabilities( stateSpace, controlSpace, ...
 % If a control input l is not feasible for a particular state i, the
 % transition  probabilities to all states can be set to zero.
 
-% a=find(stateSpace(:,1)==targetCell(1));
-% c=find(stateSpace(:,2)==targetCell(2));
-% 
-% termination_index = intersect(a,c);
-% P(termination_index,:,:)=0;
 %% compute stage costs
 G = ComputeStageCosts( stateSpace, controlSpace, ...
     mazeSize, walls, targetCell, holes, resetCell, p_f, c_p, c_r );
@@ -122,15 +117,16 @@ title(strcat('Linear programming (width=', num2str(mazeSize(1)), ', height=', nu
 
 %% check if all J_opt and u_opt are same
 same = true;
-if J_opt_vi ~= J_opt_pi
-    disp('Optimal costs vi and pi are not identical')
+accuracy = 0.00001;
+if ~(norm(J_opt_vi-J_opt_pi)<accuracy)
+    disp('J_opt_vi not equal J_opt_pi')
     same = false;
 end
-if J_opt_vi ~= J_opt_lp'
+if ~(norm(J_opt_vi-J_opt_lp')<accuracy)
     disp('J_opt_vi not equal J_opt_lp')
     same = false;
 end
-if J_opt_pi ~= J_opt_lp'
+if ~(norm(J_opt_pi-J_opt_lp')<accuracy)
     disp('J_opt_pi not equal J_opt_lp')
     same = false;
 end 
@@ -139,15 +135,15 @@ if same
 end
 same = true;
 
-if u_opt_ind_vi ~= u_opt_ind_pi
+if ~isequal(u_opt_ind_vi,u_opt_ind_pi)
     disp('Optimal policies vi and pi are not identical')
     same = false;
 end
-if u_opt_ind_lp ~= u_opt_ind_pi
+if ~isequal(u_opt_ind_lp,u_opt_ind_pi)
     disp('Optimal policies lp and pi are not identical')
     same = false;
 end
-if u_opt_ind_lp ~= u_opt_ind_vi
+if ~isequal(u_opt_ind_lp,u_opt_ind_vi)
     disp('Optimal policies lp and vi are not identical')
     same = false;
 end

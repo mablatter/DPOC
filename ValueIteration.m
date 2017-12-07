@@ -45,9 +45,10 @@ J_previous = J_opt-ones(1,no_of_states);
 
 % Max difference between current and previous cost before aborting
 % iteration
-abort_threshold = 0.000001;
+abort_threshold = 0.00001;
 
 % Iterate
+% max(J_opt-J_previous)>abort_threshold % acc. exercise sheet
 while norm(J_opt-J_previous)>abort_threshold
     % Count iterations (just for info) and store current cost to compare
     % later
@@ -60,7 +61,6 @@ while norm(J_opt-J_previous)>abort_threshold
     for i=1:no_of_states
         for u=1:no_of_controls
             for j=1:no_of_states
-                % P(i,j,u) is 0 for invalid u, right?
                 expected_value = expected_value + P(i,j,u)*J_opt(j);
             end
             temporary_cost(u) = G(i,u)+expected_value;
@@ -75,7 +75,7 @@ while norm(J_opt-J_previous)>abort_threshold
     end
 end
 
-disp('Number of value iterations:' + count);
+%disp('Number of value iterations:' + count);
 
 end
 
