@@ -120,7 +120,7 @@ figH = PlotMaze( 4, mazeSize, walls, targetCell, holes, resetCell, stateSpace, .
 figure(figH);
 title(strcat('Linear programming (width=', num2str(mazeSize(1)), ', height=', num2str(mazeSize(2)), ')'));
 
-%% check if all J_opt are same
+%% check if all J_opt and u_opt are same
 same = true;
 if J_opt_vi ~= J_opt_pi
     disp('Optimal costs vi and pi are not identical')

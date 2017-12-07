@@ -48,14 +48,10 @@ for u=1:no_of_controls
     A(start_index:end_index,:) = eye(no_of_states) - P(:,:,u);
     constraints(start_index:end_index,:) = G(:,u);
 end
-% TODO make it select indices where constraints is inf
-constraints(find(constraints==inf)) = 1000000;
+% Replaces inf with a large number (linprog cannot handle inf)
+constraints(constraints==inf) = 1000000;
 
-[J_opt, FVAL, EXITFLAG] = linprog(weights',A,constraints);
-%J_opt
-%FVAL
-%EXITFLAG
-%disp('Linprog exited with ' + EXITFLAG);
+J_opt = linprog(weights',A,constraints);
 
 %Find optimal policy
 for i=1:no_of_states
