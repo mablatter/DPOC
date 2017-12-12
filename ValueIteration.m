@@ -48,8 +48,7 @@ J_previous = J_opt-ones(1,no_of_states);
 abort_threshold = 0.00001;
 
 % Iterate
-% max(J_opt-J_previous)>abort_threshold % acc. exercise sheet
-while norm(J_opt-J_previous)>abort_threshold
+while max(abs(J_opt-J_previous))>abort_threshold %norm(J_opt-J_previous)>abort_threshold
     % Count iterations (just for info) and store current cost to compare
     % later
     count = count+1;
@@ -71,11 +70,8 @@ while norm(J_opt-J_previous)>abort_threshold
         [min_cost, min_cost_index] = min(temporary_cost);
         J_opt(i) = min_cost(1);
         u_opt_ind(i) = min_cost_index(1);
-        
     end
 end
-
 %disp('Number of value iterations:' + count);
-
 end
 
